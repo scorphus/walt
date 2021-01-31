@@ -32,6 +32,10 @@ class ActionRunnerBase:
         logger.debug("Stopping %s tasks", len(self._tasks))
         for t in self._tasks:
             t.cancel()
+        if not self._tasks:
+            logger.debug("Stopping remaining tasks")
+            for t in asyncio.all_tasks():
+                t.cancel()
 
     def run(self):
         """run runs the action until completion"""

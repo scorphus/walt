@@ -102,6 +102,18 @@ def test_action_runner_finishes_on_signals(signum, action_runner):
     action_runner.run()
 
 
+@pytest.mark.parametrize("signum", [signal.SIGINT, signal.SIGTERM])
+def test_action_runner_finishes_on_signals_when_no_tasks(signum, action_runner):
+    async def side_effect(self):
+        self._tasks = []
+        os.kill(os.getpid(), signum)
+        await asyncio.sleep(1e3)
+
+    task = AsyncMock(side_effect=side_effect)
+    action_runner.register_tasks([(task, [action_runner])])
+    action_runner.run()
+
+
 def test_action_runner_finishes_on_tasks_cancellation(action_runner, mocker):
     async def side_effect():
         for task in asyncio.all_tasks():
