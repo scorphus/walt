@@ -8,26 +8,13 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+from tests.base import ActionRunnerBaseTester
 from unittest.mock import AsyncMock
-from walt.action_runners import ActionRunnerBase
 
 import asyncio
 import os
 import pytest
 import signal
-
-
-class ActionRunnerBaseTester(ActionRunnerBase):
-    async def _run_action(self):
-        for task in self.tasks:
-            try:
-                self._create_task(*task)
-            except TypeError:
-                self._create_task(task)
-        await super()._run_action()
-
-    def register_tasks(self, tasks):
-        self.tasks = tasks
 
 
 @pytest.fixture
@@ -114,13 +101,12 @@ def test_action_runner_finishes_on_signals_when_no_tasks(signum, action_runner):
     action_runner.run()
 
 
-def test_action_runner_finishes_on_tasks_cancellation(action_runner, mocker):
+def test_action_runner_finishes_on_tasks_cancellation(action_runner, logger_mock):
     async def side_effect():
         for task in asyncio.all_tasks():
             task.cancel()
         await asyncio.sleep(1e3)
 
-    logger_mock = mocker.patch("walt.action_runners.logger")
     task = AsyncMock(side_effect=side_effect)
     action_runner.register_tasks([task])
     action_runner.run()

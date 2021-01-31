@@ -5,4 +5,27 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-log_level = "INFO"
+log_level = "DEBUG"
+concurrent = 2
+interval = 1
+timeout = 4
+
+# A map of URLs and their respective regular expressions: URL = regexp pattern
+[url_map]
+"https://duckduckgo.com/?q=walt" = "Walt Disney"
+"https://www.google.com/search?q=walt" = "Walt Disney"
+"http://localhost:8080" = ""
+"http://localhost:8080/path_01" = ""
+"http://localhost:8080/path_02" = "\\w{,7}"
+"http://localhost:8080/path_03" = "\\w{2,}"
+"http://localhost:8080/path_04" = "\\w{,2}"
+"http://localhost:8080/path_05" = "\\w{7,}"
+"http://localhost:8080/path_06" = "\\w{,7}"
+"http://localhost:8080/path_07" = "\\w{9,}"
+"http://localhost:8080/path_08" = "\\w{,5}"
+"http://localhost:8989" = "" # unavailable
+invalid = ""
+
+[kafka]
+uri = "localhost:9092"
+topic = "walt"

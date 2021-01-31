@@ -18,8 +18,34 @@ import toml
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+HEADERS = {"Pragma": "no-cache"}
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"  # NOQA
+
+CONCURRENT = 2  # Number of concurrent workers
+INTERVAL = 2  # Sleep interval for each worker
+TIMEOUT = 30  # Timeout for HTTP connections
+
+KAFKA_URI = "localhost:9092"
+
 CONFIG = {
     "log_level": LOG_LEVEL,
+    "concurrent": CONCURRENT,
+    "interval": INTERVAL,
+    "timeout": TIMEOUT,
+    "user_agent": USER_AGENT,
+    "headers": HEADERS,
+    "url_map": {  # A dictionary of URL => regexp pattern
+        "http://localhost:8080/path_1": r"\w{,5}",
+        "http://localhost:8080/path_2": r"\w{6,}",
+        "http://localhost:8080/path_3": "",
+        "http://localhost:8080": "",
+        "http://localhost:8989": "",
+        "invalid": "",
+    },
+    "kafka": {
+        "uri": KAFKA_URI,  # Kafka server URI
+        "topic": "walt",  # Default topic
+    },
 }
 
 

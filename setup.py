@@ -58,6 +58,8 @@ setup(
     author_email="scorphus@gmail.com",
     packages=find_packages(),
     install_requires=[
+        "aiohttp",
+        "aiokafka",
         "toml",
     ],
     extras_require=extras_require,

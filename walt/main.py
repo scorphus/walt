@@ -11,6 +11,7 @@
 
 from walt import config
 from walt import logger
+from walt.action_runners import Producer
 from walt.argparser import action
 from walt.argparser import ActionArgParser
 
@@ -26,6 +27,7 @@ def walt():  # pragma: no cover
     .. code-block:: text
 
         $ walt [-c config.toml] <action>
+        $ walt -c config.toml produce  # to start a producer
 
     """
     set_verbosity(ActionArgParser.args.verbose)
@@ -61,3 +63,9 @@ def set_verbosity(verbose=False, level_name=""):  # pragma: no cover
 def hello(cfg):
     print("Hello from walt!")
     print(f"Config is: {cfg}")
+
+
+@action
+def produce(cfg):
+    producer = Producer(cfg)
+    producer.run()
