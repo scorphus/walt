@@ -195,3 +195,49 @@ class Producer(ActionRunnerBase):
             await self._kafka_producer.send(self._kafka_topic, msg)
         except Exception:
             logger.exception("Failed to send {msg} to {self._kafka_topic}!")
+
+
+class Consumer(ActionRunnerBase):
+    """Consumer consumes data from a Kafka topic, runs it through a deserializer
+    and delivers it to a data storage"""
+
+    def __init__(self, cfg, storage):
+        super().__init__()
+        self._interval = cfg["interval"]
+        self._timeout = cfg["timeout"]
+        self._kafka_uri = cfg["kafka"]["uri"]
+        self._kafka_topic = cfg["kafka"]["topic"]
+        self._kafka_consumer = None
+        self._storage = storage
+
+    async def _run_action(self):
+        logger.info("Starting %s", self.__class__.__name__)
+        await self._start_kafka_consumer()
+        logger.info("Consuming results")
+        try:
+            async for msg in self._kafka_consumer:
+                res = msg.value.decode()
+                logger.info("Consumed a result: %s", res)
+                await self._storage.save(res)
+                await self._incr_counter()
+        finally:
+            logger.debug("Stopping Kafka consumer")
+            await self._kafka_consumer.stop()
+            logger.info("Consumed %d results", self._counter)
+
+    async def _start_kafka_consumer(self):
+        logger.debug("Starting Kafka Consumer")
+        self._kafka_consumer = aiokafka.AIOKafkaConsumer(
+            self._kafka_topic,
+            bootstrap_servers=self._kafka_uri,
+            request_timeout_ms=self._timeout * 1000,
+            retry_backoff_ms=self._interval * 1000,
+        )
+        backoff = 1
+        while True:
+            try:
+                return await self._kafka_consumer.start()
+            except Exception:
+                logger.exception("Failed to start Kafka Consumer!")
+            await asyncio.sleep(backoff)
+            backoff = min(10, backoff * 2)

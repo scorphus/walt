@@ -11,9 +11,11 @@
 
 from walt import config
 from walt import logger
+from walt.action_runners import Consumer
 from walt.action_runners import Producer
 from walt.argparser import action
 from walt.argparser import ActionArgParser
+from walt.storages import ConsoleResultWriter
 
 import logging
 import os
@@ -69,3 +71,10 @@ def hello(cfg):
 def produce(cfg):
     producer = Producer(cfg)
     producer.run()
+
+
+@action
+def consume(cfg):
+    writer = ConsoleResultWriter()
+    consumer = Consumer(cfg, writer)
+    consumer.run()

@@ -47,3 +47,8 @@ def client_session_mock(mocker, async_magic_mock, client_session_get_mock):
 @pytest.fixture
 def kafka_producer_mock(mocker):
     return mocker.patch("walt.action_runners.aiokafka.AIOKafkaProducer", return_value=AsyncMock())
+
+
+@pytest.fixture
+def kafka_consumer_mock(mocker):
+    return mocker.patch("walt.action_runners.aiokafka.AIOKafkaConsumer", return_value=AsyncMock())
