@@ -14,6 +14,7 @@ from unittest.mock import ANY
 from unittest.mock import AsyncMock
 from unittest.mock import call
 from unittest.mock import MagicMock
+from walt import result
 from walt.action_runners import Producer
 
 import aiohttp
@@ -21,6 +22,7 @@ import aiokafka
 import asyncio
 import contextlib
 import pytest
+import re
 
 
 def test_producer_inits_with_a_cfg_arg():
@@ -175,39 +177,64 @@ def producer_auto_cancel():
     return producer
 
 
-def test_producer_sends_messages_with_url(
-    producer_auto_cancel, client_session_mock, kafka_producer_mock
-):
-    producer_auto_cancel.run()
-    assert producer_auto_cancel._kafka_producer.send.await_count == producer_auto_cancel._counter
-    msg = producer_auto_cancel._kafka_producer.send.call_args[0][1].decode()
-    assert any(msg.startswith(url) for url in producer_auto_cancel._url_map)
-
-
-def test_producer_sends_messages_with_status_code(
+def test_producer_sends_messages_successfully(
     producer_auto_cancel, client_session_mock, client_session_get_mock, kafka_producer_mock
 ):
     client_session_get_mock.return_value.__aenter__.return_value.status = 200
     producer_auto_cancel.run()
+    res = result.ResultSerde.from_bytes(producer_auto_cancel._kafka_producer.send.call_args[0][1])
+    assert res.result_type is result.ResultType.RESULT
+    assert any(res.url == url for url in producer_auto_cancel._url_map)
+    assert isinstance(res.response_time, float) and res.response_time > 0
+    assert res.status_code == 200
+    assert res.pattern == result.Pattern.NO_PATTERN
+    assert isinstance(res.utc_timestamp_ms, int) and res.utc_timestamp_ms > 0
     assert producer_auto_cancel._kafka_producer.send.await_count == producer_auto_cancel._counter
-    msg = producer_auto_cancel._kafka_producer.send.call_args[0][1].decode()
-    *_, status_code = msg.split("\n", 2)
-    assert int(status_code) == 200
 
 
 @pytest.mark.parametrize(
-    "side_effect, msg_suffix",
+    "regexp, side_effect, pattern",
     [
-        (aiohttp.ClientError, "ClientError"),
-        (ClientOSError, "ClientError"),
-        (asyncio.TimeoutError, "TimeoutError"),
-        (OSError, "Exception"),
-        (Exception, "Exception"),
+        ("", None, result.Pattern.NO_PATTERN),
+        (r"\w{,6}", None, result.Pattern.FOUND),
+        (r"\w{6,}", None, result.Pattern.NOT_FOUND),
+        ("", aiohttp.ClientError, result.Pattern.IRRELEVANT),
+        (r".*", aiohttp.ClientError, result.Pattern.IRRELEVANT),
+    ],
+)
+def test_producer_sends_messages_with_pattern_result(
+    regexp,
+    side_effect,
+    pattern,
+    producer_auto_cancel,
+    client_session_mock,
+    client_session_get_mock,
+    resp_text_mock,
+    kafka_producer_mock,
+):
+    client_session_get_mock.return_value.__aenter__.return_value.status = 200
+    resp_text_mock.return_value = "Such quick fox jumps over the many lazy dog wow"
+    client_session_get_mock.side_effect = side_effect
+    producer_auto_cancel._url_map = {"such.web": re.compile(regexp) if regexp else None}
+    producer_auto_cancel.run()
+    res = result.ResultSerde.from_bytes(producer_auto_cancel._kafka_producer.send.call_args[0][1])
+    assert res.pattern == pattern
+    assert producer_auto_cancel._kafka_producer.send.await_count == producer_auto_cancel._counter
+
+
+@pytest.mark.parametrize(
+    "side_effect, result_type",
+    [
+        (aiohttp.ClientError, result.ResultType.CLIENT_ERROR),
+        (ClientOSError, result.ResultType.CLIENT_ERROR),
+        (asyncio.TimeoutError, result.ResultType.TIMEOUT_ERROR),
+        (OSError, result.ResultType.ERROR),
+        (Exception, result.ResultType.ERROR),
     ],
 )
 def test_producer_sends_messages_on_client_failure(
     side_effect,
-    msg_suffix,
+    result_type,
     producer_auto_cancel,
     client_session_mock,
     client_session_get_mock,
@@ -215,10 +242,12 @@ def test_producer_sends_messages_on_client_failure(
 ):
     client_session_get_mock.side_effect = side_effect
     producer_auto_cancel.run()
+    res = result.ResultSerde.from_bytes(producer_auto_cancel._kafka_producer.send.call_args[0][1])
+    assert res.result_type is result_type
+    assert res.response_time == 0
+    assert res.status_code == 0
+    assert res.pattern == result.Pattern.IRRELEVANT
     assert producer_auto_cancel._kafka_producer.send.await_count == producer_auto_cancel._counter
-    msg = producer_auto_cancel._kafka_producer.send.call_args[0][1].decode()
-    assert msg.endswith(msg_suffix)
-    assert any(msg.startswith(url) for url in producer_auto_cancel._url_map)
 
 
 @pytest.mark.parametrize(

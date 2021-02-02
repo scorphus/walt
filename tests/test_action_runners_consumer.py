@@ -12,6 +12,7 @@ from tests.base import ActionRunnerBaseTester
 from unittest.mock import AsyncMock
 from unittest.mock import call
 from unittest.mock import MagicMock
+from walt import result
 from walt.action_runners import Consumer
 
 import aiokafka
@@ -22,7 +23,7 @@ import pytest
 
 def test_consumer_inits_with_a_cfg_and_storage_args():
     cfg_mock = MagicMock()
-    consumer = Consumer(cfg_mock, AsyncMock())
+    consumer = Consumer(cfg_mock, AsyncMock(), result.ResultSerde)
     assert consumer._interval == cfg_mock["interval"]
     assert consumer._timeout == cfg_mock["timeout"]
     assert consumer._kafka_uri == cfg_mock["kafka"]["uri"]
@@ -32,7 +33,7 @@ def test_consumer_inits_with_a_cfg_and_storage_args():
 
 @pytest.fixture
 def consumer():
-    consumer = Consumer(MagicMock(), AsyncMock())
+    consumer = Consumer(MagicMock(), AsyncMock(), result.ResultSerde)
     consumer._interval = 1
     consumer._timeout = 1
     return consumer
@@ -91,7 +92,7 @@ def consumer_auto_cancel():
         for task in asyncio.all_tasks():
             task.cancel()
 
-    consumer = ConsumerTester(MagicMock(), AsyncMock())
+    consumer = ConsumerTester(MagicMock(), AsyncMock(), result.ResultSerde)
     consumer.register_tasks([(AsyncMock(side_effect=side_effect), (consumer,))])
     consumer._interval = 1
     consumer._timeout = 1
@@ -99,18 +100,20 @@ def consumer_auto_cancel():
 
 
 def test_consumer_consume_one_message(consumer_auto_cancel, kafka_consumer_mock):
-    msg_value = "wow.web\nso result"
-    msg = MagicMock(value=msg_value.encode())
+    msg_value = b"1\nwow.web\n0.359\n200\n2\n719"
+    msg = MagicMock(value=msg_value)
     kafka_consumer_mock.return_value.__aiter__.return_value = [msg]
     consumer_auto_cancel.run()
-    consumer_auto_cancel._storage.save.assert_called_once_with(msg_value)
+    expected_result = result.ResultSerde.from_bytes(msg_value)
+    consumer_auto_cancel._storage.save.assert_called_once_with(expected_result)
 
 
 def test_consumer_consume_messages(consumer_auto_cancel, kafka_consumer_mock):
     total_messages = 10
-    msg_value = "wow.web\nso result"
-    msg = MagicMock(value=msg_value.encode())
+    msg_value = b"1\nwow.web\n0.359\n200\n2\n719"
+    msg = MagicMock(value=msg_value)
     kafka_consumer_mock.return_value.__aiter__.return_value = [msg] * total_messages
     consumer_auto_cancel.run()
     assert consumer_auto_cancel._storage.save.call_count == total_messages
-    consumer_auto_cancel._storage.save.assert_any_call(msg_value)
+    expected_result = result.ResultSerde.from_bytes(msg_value)
+    consumer_auto_cancel._storage.save.assert_any_call(expected_result)

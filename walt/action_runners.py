@@ -9,6 +9,7 @@
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
 from walt import logger
+from walt import result
 
 import aiohttp
 import aiokafka
@@ -178,17 +179,27 @@ class Producer(ActionRunnerBase):
         try:
             start = time.monotonic()
             async with self._session.get(url, timeout=self._timeout) as resp:
+                pattern = await self._check_pattern(url, resp)
                 spent = time.monotonic() - start
-                return f"{url}\n{spent}\n{resp.status}"
+                return result.Result(result.ResultType.RESULT, url, spent, resp.status, pattern)
         except aiohttp.ClientError as err:
             logger.error("ClientError (%s): %s", err.__class__.__name__, url)
-            return f"{url}\nNone\nClientError"
+            return result.Result(result.ResultType.CLIENT_ERROR, url)
         except asyncio.TimeoutError:
             logger.error("Timeout: %s", url)
-            return f"{url}\nNone\nTimeoutError"
+            return result.Result(result.ResultType.TIMEOUT_ERROR, url)
         except Exception:
             logger.exception("Failed to fetch %s", url)
-            return f"{url}\nNone\nException"
+            return result.Result(result.ResultType.ERROR, url)
+
+    async def _check_pattern(self, url, resp):
+        regexp = self._url_map[url]
+        if not regexp:
+            return result.Pattern.NO_PATTERN
+        text = await resp.text()
+        if regexp.search(text, re.MULTILINE):
+            return result.Pattern.FOUND
+        return result.Pattern.NOT_FOUND
 
     async def _kafka_send(self, msg):
         try:
@@ -201,7 +212,7 @@ class Consumer(ActionRunnerBase):
     """Consumer consumes data from a Kafka topic, runs it through a deserializer
     and delivers it to a data storage"""
 
-    def __init__(self, cfg, storage):
+    def __init__(self, cfg, storage, serde):
         super().__init__()
         self._interval = cfg["interval"]
         self._timeout = cfg["timeout"]
@@ -209,6 +220,7 @@ class Consumer(ActionRunnerBase):
         self._kafka_topic = cfg["kafka"]["topic"]
         self._kafka_consumer = None
         self._storage = storage
+        self._serde = serde
 
     async def _run_action(self):
         logger.info("Starting %s", self.__class__.__name__)
@@ -216,14 +228,14 @@ class Consumer(ActionRunnerBase):
         logger.info("Consuming results")
         try:
             async for msg in self._kafka_consumer:
-                res = msg.value.decode()
-                logger.info("Consumed a result: %s", res)
-                await self._storage.save(res)
+                logger.info("Consumed a message with value: %s", msg.value)
+                value = self._serde.from_bytes(msg.value)
+                await self._storage.save(value)
                 await self._incr_counter()
         finally:
             logger.debug("Stopping Kafka consumer")
             await self._kafka_consumer.stop()
-            logger.info("Consumed %d results", self._counter)
+            logger.info("Consumed %d messages", self._counter)
 
     async def _start_kafka_consumer(self):
         logger.debug("Starting Kafka Consumer")

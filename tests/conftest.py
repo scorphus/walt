@@ -38,8 +38,14 @@ def async_magic_mock():
 
 
 @pytest.fixture
-def client_session_get_mock(async_magic_mock):
+def resp_text_mock():
+    return AsyncMock()
+
+
+@pytest.fixture
+def client_session_get_mock(async_magic_mock, resp_text_mock):
     get_mock = async_magic_mock()
+    get_mock.return_value.__aenter__.return_value.text = resp_text_mock
     return get_mock
 
 

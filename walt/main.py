@@ -15,6 +15,7 @@ from walt.action_runners import Consumer
 from walt.action_runners import Producer
 from walt.argparser import action
 from walt.argparser import ActionArgParser
+from walt.result import ResultSerde
 from walt.storages import ConsoleResultWriter
 
 import logging
@@ -76,5 +77,5 @@ def produce(cfg):
 @action
 def consume(cfg):
     writer = ConsoleResultWriter()
-    consumer = Consumer(cfg, writer)
+    consumer = Consumer(cfg, writer, ResultSerde)
     consumer.run()
