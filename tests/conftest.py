@@ -11,7 +11,14 @@
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
+import os
 import pytest
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _shut_logger(session_mocker):
+    if os.getenv("SHUT_LOGGER", None):
+        return session_mocker.patch("walt.action_runners.logger")
 
 
 @pytest.fixture
