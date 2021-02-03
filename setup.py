@@ -60,6 +60,7 @@ setup(
     install_requires=[
         "aiohttp",
         "aiokafka",
+        "psycopg2-binary",
         "toml",
     ],
     extras_require=extras_require,

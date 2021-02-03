@@ -17,6 +17,7 @@ from walt.argparser import action
 from walt.argparser import ActionArgParser
 from walt.result import ResultSerde
 from walt.storages import ConsoleResultWriter
+from walt.storages import PostgresResultStorage
 
 import logging
 import os
@@ -66,6 +67,18 @@ def set_verbosity(verbose=False, level_name=""):  # pragma: no cover
 def hello(cfg):
     print("Hello from walt!")
     print(f"Config is: {cfg}")
+
+
+@action
+def setup_database(cfg):
+    storage = PostgresResultStorage(**cfg["postgres"])
+    storage.setup_database()
+
+
+@action
+def teardown_database(cfg):
+    storage = PostgresResultStorage(**cfg["postgres"])
+    storage.teardown_database()
 
 
 @action

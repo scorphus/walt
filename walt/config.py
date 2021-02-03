@@ -46,6 +46,13 @@ CONFIG = {
         "uri": KAFKA_URI,  # Kafka server URI
         "topic": "walt",  # Default topic
     },
+    "postgres": {
+        "host": "localhost",  # Database host address
+        "port": 5432,  # Connection port number
+        "user": "postgres",  # User name used to authenticate
+        "password": "mysecretpassword",  # Password used to authenticate
+        "dbname": "walt",  # Database name
+    },
 }
 
 
