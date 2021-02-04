@@ -8,6 +8,7 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+from walt import async_backoff
 from walt import logger
 from walt import result
 
@@ -111,6 +112,7 @@ class Producer(ActionRunnerBase):
         logger.debug("Stopping Kafka producer")
         await self._kafka_producer.stop()
 
+    @async_backoff(msg="Failed to start Kafka Producer!")
     async def _start_kafka_producer(self):
         logger.debug("Starting Kafka Producer")
         self._kafka_producer = aiokafka.AIOKafkaProducer(
@@ -118,14 +120,7 @@ class Producer(ActionRunnerBase):
             request_timeout_ms=self._timeout * 1000,
             retry_backoff_ms=self._interval * 1000,
         )
-        backoff = max(1, self._interval)
-        while True:
-            try:
-                return await self._kafka_producer.start()
-            except Exception:
-                logger.exception("Failed to start Kafka Producer!")
-            await asyncio.sleep(backoff)
-            backoff = min(self._interval * 10, backoff * 2)
+        await self._kafka_producer.start()
 
     async def _process_urls(self):
         """_process_urls creates worker tasks to check the URLs"""
@@ -237,6 +232,7 @@ class Consumer(ActionRunnerBase):
             await self._kafka_consumer.stop()
             logger.info("Consumed %d messages", self._counter)
 
+    @async_backoff(msg="Failed to start Kafka Consumer!")
     async def _start_kafka_consumer(self):
         logger.debug("Starting Kafka Consumer")
         self._kafka_consumer = aiokafka.AIOKafkaConsumer(
@@ -245,11 +241,4 @@ class Consumer(ActionRunnerBase):
             request_timeout_ms=self._timeout * 1000,
             retry_backoff_ms=self._interval * 1000,
         )
-        backoff = 1
-        while True:
-            try:
-                return await self._kafka_consumer.start()
-            except Exception:
-                logger.exception("Failed to start Kafka Consumer!")
-            await asyncio.sleep(backoff)
-            backoff = min(10, backoff * 2)
+        await self._kafka_consumer.start()

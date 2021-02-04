@@ -23,7 +23,10 @@ def _shut_logger(session_mocker):
 
 @pytest.fixture
 def logger_mock(mocker):
-    return mocker.patch("walt.action_runners.logger")
+    logger_mock = MagicMock()
+    mocker.patch("walt.logger", logger_mock)
+    mocker.patch("walt.action_runners.logger", logger_mock)
+    return logger_mock
 
 
 @pytest.fixture
