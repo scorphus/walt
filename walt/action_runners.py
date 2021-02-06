@@ -220,6 +220,7 @@ class Consumer(ActionRunnerBase):
     async def _run_action(self):
         logger.info("Starting %s", self.__class__.__name__)
         await self._start_kafka_consumer()
+        await self._connect_storage()
         logger.info("Consuming results")
         try:
             async for msg in self._kafka_consumer:
@@ -228,6 +229,8 @@ class Consumer(ActionRunnerBase):
                 await self._storage.save(value)
                 await self._incr_counter()
         finally:
+            logger.debug("Disconnecting storage")
+            await self._storage.disconnect()
             logger.debug("Stopping Kafka consumer")
             await self._kafka_consumer.stop()
             logger.info("Consumed %d messages", self._counter)
@@ -242,3 +245,8 @@ class Consumer(ActionRunnerBase):
             retry_backoff_ms=self._interval * 1000,
         )
         await self._kafka_consumer.start()
+
+    @async_backoff(msg="Failed to connect storage!")
+    async def _connect_storage(self):
+        logger.debug("Connecting storage")
+        await self._storage.connect()

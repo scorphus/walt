@@ -8,8 +8,9 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-from walt.queries import CREATE_TABLES_SQL
-from walt.queries import DROP_TABLES_SQL
+from unittest.mock import AsyncMock
+from walt import queries
+from walt import result
 from walt.storages import PostgresResultStorage
 
 import pytest
@@ -74,7 +75,7 @@ def test_setup_database_creates_database(pg_res_storage, init_args, execute_mock
 
 def test_setup_database_creates_tables(pg_res_storage, execute_mock):
     pg_res_storage.setup_database()
-    execute_mock.assert_any_call(CREATE_TABLES_SQL)
+    execute_mock.assert_any_call(queries.CREATE_TABLES_SQL)
 
 
 def test_teardown_database_calls_connect(pg_res_storage, psycopg2_mock, init_args):
@@ -98,7 +99,7 @@ def test_teardown_database_sets_isolation_level(pg_res_storage, conn_mock):
 
 def test_teardown_database_drops_tables(pg_res_storage, execute_mock):
     pg_res_storage.teardown_database()
-    execute_mock.assert_any_call(DROP_TABLES_SQL)
+    execute_mock.assert_any_call(queries.DROP_TABLES_SQL)
 
 
 def test_teardown_database_drops_database(pg_res_storage, init_args, execute_mock, mocker):
@@ -106,3 +107,71 @@ def test_teardown_database_drops_database(pg_res_storage, init_args, execute_moc
     sql_mock.SQL.side_effect = sql_mock.Identifier.side_effect = str
     pg_res_storage.teardown_database()
     execute_mock.assert_any_call(f"DROP DATABASE {init_args['dbname']}")
+
+
+@pytest.fixture
+def create_pool_mock(mocker):
+    return mocker.patch("walt.storages.aiopg.create_pool", AsyncMock())
+
+
+@pytest.fixture
+def pool_mock(create_pool_mock, async_magic_mock):
+    pool_mock = async_magic_mock()
+    create_pool_mock.return_value = pool_mock
+    return pool_mock
+
+
+@pytest.fixture
+def aiopg_conn_mock(pool_mock, async_magic_mock):
+    aiopg_conn_mock = async_magic_mock()
+    pool_mock.acquire.return_value.__aenter__.return_value = aiopg_conn_mock
+    return aiopg_conn_mock
+
+
+@pytest.fixture
+def cursor_mock(aiopg_conn_mock, async_magic_mock):
+    cursor_mock = async_magic_mock()
+    cursor_mock.execute = AsyncMock()
+    aiopg_conn_mock.cursor.return_value.__aenter__.return_value = cursor_mock
+    return cursor_mock
+
+
+@pytest.fixture
+def result_result():
+    return result.Result(
+        result.ResultType.RESULT, "wow.result", 0.359, 200, result.Pattern.NO_PATTERN
+    )
+
+
+@pytest.fixture
+def error_result():
+    return result.Result(result.ResultType.ERROR, "very.error")
+
+
+@pytest.mark.asyncio
+async def test_connect_creates_a_pool(pg_res_storage, init_args, create_pool_mock):
+    dsn_with_dbname = " ".join(f"{k}={v}" for k, v in init_args.items())
+    await pg_res_storage.connect()
+    create_pool_mock.assert_awaited_once_with(dsn_with_dbname)
+
+
+@pytest.mark.asyncio
+async def test_save_inserts_result_result(pg_res_storage, result_result, cursor_mock):
+    await pg_res_storage.connect()
+    await pg_res_storage.save(result_result)
+    cursor_mock.execute.assert_awaited_once_with(
+        queries.RESULT_INSERT_SQL, result_result.as_dict()
+    )
+
+
+@pytest.mark.asyncio
+async def test_save_inserts_error_result(pg_res_storage, error_result, cursor_mock):
+    await pg_res_storage.connect()
+    await pg_res_storage.save(error_result)
+    cursor_mock.execute.assert_awaited_once_with(queries.ERROR_INSERT_SQL, error_result.as_dict())
+
+
+@pytest.mark.asyncio
+async def test_save_logs_exception_when_not_connected(pg_res_storage, logger_mock):
+    await pg_res_storage.save(None)
+    logger_mock.exception.called_once()

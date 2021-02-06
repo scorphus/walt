@@ -16,7 +16,6 @@ from walt.action_runners import Producer
 from walt.argparser import action
 from walt.argparser import ActionArgParser
 from walt.result import ResultSerde
-from walt.storages import ConsoleResultWriter
 from walt.storages import PostgresResultStorage
 
 import logging
@@ -89,6 +88,6 @@ def produce(cfg):
 
 @action
 def consume(cfg):
-    writer = ConsoleResultWriter()
-    consumer = Consumer(cfg, writer, ResultSerde)
+    storage = PostgresResultStorage(**cfg["postgres"])
+    consumer = Consumer(cfg, storage, ResultSerde)
     consumer.run()

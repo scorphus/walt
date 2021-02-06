@@ -51,6 +51,13 @@ async def test_start_kafka_consumer_retries_with_backoff(consumer, kafka_consume
 
 
 @pytest.mark.asyncio
+async def test_run_action_connects_storage(consumer, kafka_consumer_mock):
+    consumer._process_urls = AsyncMock()
+    await consumer._run_action()
+    consumer._storage.connect.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_run_action_starts_kafka_consumer(consumer, kafka_consumer_mock):
     consumer._process_urls = AsyncMock()
     await consumer._run_action()

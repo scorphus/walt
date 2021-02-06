@@ -80,6 +80,12 @@ class Result:
         except ValueError as err:
             raise ValueError(f"{repr(result_str)} is not a valid Result representation: {err}")
 
+    def as_dict(self):
+        result = vars(self).copy()
+        result["result_type"] = self.result_type.name
+        result["pattern"] = self.pattern.name
+        return result
+
 
 class ResultSerde:
     """ResultSerde serializes and deserializes Result into/from bytes"""

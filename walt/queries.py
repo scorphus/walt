@@ -43,3 +43,17 @@ CREATE TABLE IF NOT EXISTS error (
 
 CREATE INDEX error_url_index ON error(url ASC NULLS LAST);
 """
+
+RESULT_INSERT_SQL = """
+INSERT INTO result (url, response_time, status_code, pattern, timestamp) VALUES (
+    %(url)s, %(response_time)s, %(status_code)s, %(pattern)s,
+    TIMESTAMP 'epoch' + %(utc_timestamp_ms)s * INTERVAL '1 millisecond'
+);
+"""
+
+ERROR_INSERT_SQL = """
+INSERT INTO error (url, error, timestamp) VALUES (
+    %(url)s, %(result_type)s,
+    TIMESTAMP 'epoch' + %(utc_timestamp_ms)s * INTERVAL '1 millisecond'
+);
+"""

@@ -10,24 +10,21 @@
 
 from psycopg2 import sql
 from walt import logger
-from walt.queries import CREATE_TABLES_SQL
-from walt.queries import DROP_TABLES_SQL
+from walt import queries
+from walt.result import ResultType
 
+import aiopg
 import psycopg2
 
 
-class ConsoleResultWriter:
-    @staticmethod
-    async def save(result):
-        print(f"Got a result: {result}")
-
-
 class PostgresResultStorage:
-    """PostgresResultStorage manages the database and Result tables"""
+    """PostgresResultStorage manages the database and Result tables, and inserts
+    data into the tables depending on the type of Result"""
 
     def __init__(self, host, port, user, password, dbname):
         self._dbname = dbname
         self._dsn = f"host={host} port={port} user={user} password={password}"
+        self._pool = None
 
     def setup_database(self):
         """setup_database creates the database and its tables"""
@@ -37,14 +34,42 @@ class PostgresResultStorage:
             cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(self._dbname)))
         with psycopg2.connect(f"{self._dsn} dbname={self._dbname}") as conn, conn.cursor() as cur:
             logger.info("Creating tables on %s", self._dbname)
-            cur.execute(CREATE_TABLES_SQL)
+            cur.execute(queries.CREATE_TABLES_SQL)
 
     def teardown_database(self):
         """teardown_database drops the database and its tables"""
         with psycopg2.connect(f"{self._dsn} dbname={self._dbname}") as conn, conn.cursor() as cur:
             logger.info("Dropping tables from %s", self._dbname)
-            cur.execute(DROP_TABLES_SQL)
+            cur.execute(queries.DROP_TABLES_SQL)
         with psycopg2.connect(self._dsn) as conn, conn.cursor() as cur:
             logger.info("Dropping database %s", self._dbname)
             conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             cur.execute(sql.SQL("DROP DATABASE {}").format(sql.Identifier(self._dbname)))
+
+    async def connect(self):
+        self._pool = await aiopg.create_pool(f"{self._dsn} dbname={self._dbname}")
+
+    async def disconnect(self):
+        self._pool.close()
+        await self._pool.wait_closed()
+
+    async def save(self, result):
+        """save wraps _save and logs exceptions if any"""
+        try:
+            await self._save(result)
+        except Exception:
+            logger.exception("Failed to save result %s", repr(str(result)))
+
+    async def _save(self, result):
+        """_save inserts one Result according on its type"""
+        if not self._pool:
+            raise RuntimeError("Not connected. Did you forget to call `connect()`?")
+        async with self._pool.acquire() as conn, conn.cursor() as cur:
+            logger.info("Saving a result of type %s", result.result_type.name)
+            result_dict = result.as_dict()
+            if result.result_type is ResultType.RESULT:
+                logger.debug("Inserting a result: %s", result_dict)
+                await cur.execute(queries.RESULT_INSERT_SQL, result_dict)
+            else:
+                logger.debug("Inserting an error: %s", result_dict)
+                await cur.execute(queries.ERROR_INSERT_SQL, result_dict)
