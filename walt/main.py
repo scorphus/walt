@@ -63,12 +63,6 @@ def set_verbosity(verbose=False, level_name=""):  # pragma: no cover
 
 
 @action
-def hello(cfg):
-    print("Hello from walt!")
-    print(f"Config is: {cfg}")
-
-
-@action
 def setup_database(cfg):
     storage = PostgresResultStorage(**cfg["postgres"])
     storage.setup_database()
