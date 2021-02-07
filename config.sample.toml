@@ -29,6 +29,9 @@ invalid = ""
 [kafka]
 uri = "localhost:9092"
 topic = "walt"
+cafile = ""
+certfile = ""
+keyfile = ""
 
 [postgres]
 host = "localhost"

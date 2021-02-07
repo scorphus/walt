@@ -25,8 +25,6 @@ CONCURRENT = 2  # Number of concurrent workers
 INTERVAL = 2  # Sleep interval for each worker
 TIMEOUT = 30  # Timeout for HTTP connections
 
-KAFKA_URI = "localhost:9092"
-
 CONFIG = {
     "log_level": LOG_LEVEL,
     "concurrent": CONCURRENT,
@@ -43,7 +41,10 @@ CONFIG = {
         "invalid": "",
     },
     "kafka": {
-        "uri": KAFKA_URI,  # Kafka server URI
+        "uri": "localhost:9092",  # Kafka server URI
+        "cafile": "",  # Certificate Authority file path
+        "certfile": "",  # Client Certificate file path
+        "keyfile": "",  # Client Private Key file path
         "topic": "walt",  # Default topic
     },
     "postgres": {
