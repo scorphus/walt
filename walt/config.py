@@ -102,3 +102,9 @@ def override_from(cfg, recipient, namespace="walt"):
 @action
 def generate_config_sample():
     print(toml.dumps(CONFIG), end="")
+
+
+@action
+def generate_config_sample_from_env():
+    cfg = override_from(deepcopy(CONFIG), os.environ)
+    print(toml.dumps(cfg), end="")
