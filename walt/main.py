@@ -63,15 +63,27 @@ def set_verbosity(verbose=False, level_name=""):  # pragma: no cover
 
 
 @action
-def setup_database(cfg):
+def create_database(cfg):
     storage = PostgresResultStorage(**cfg["postgres"])
-    storage.setup_database()
+    storage.create_database()
 
 
 @action
-def teardown_database(cfg):
+def create_tables(cfg):
     storage = PostgresResultStorage(**cfg["postgres"])
-    storage.teardown_database()
+    storage.create_tables()
+
+
+@action
+def drop_database(cfg):
+    storage = PostgresResultStorage(**cfg["postgres"])
+    storage.drop_database()
+
+
+@action
+def drop_tables(cfg):
+    storage = PostgresResultStorage(**cfg["postgres"])
+    storage.drop_tables()
 
 
 @action

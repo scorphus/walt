@@ -26,25 +26,31 @@ class PostgresResultStorage:
         self._dsn = f"host={host} port={port} user={user} password={password}"
         self._pool = None
 
-    def setup_database(self):
-        """setup_database creates the database and its tables"""
+    def create_database(self):
+        """create_database creates the database"""
         with psycopg2.connect(self._dsn) as conn, conn.cursor() as cur:
             logger.info("Creating database %s", self._dbname)
             conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(self._dbname)))
+
+    def create_tables(self):
+        """create_tables creates all tables"""
         with psycopg2.connect(f"{self._dsn} dbname={self._dbname}") as conn, conn.cursor() as cur:
             logger.info("Creating tables on %s", self._dbname)
             cur.execute(queries.CREATE_TABLES_SQL)
 
-    def teardown_database(self):
-        """teardown_database drops the database and its tables"""
-        with psycopg2.connect(f"{self._dsn} dbname={self._dbname}") as conn, conn.cursor() as cur:
-            logger.info("Dropping tables from %s", self._dbname)
-            cur.execute(queries.DROP_TABLES_SQL)
+    def drop_database(self):
+        """drop_database drops the database"""
         with psycopg2.connect(self._dsn) as conn, conn.cursor() as cur:
             logger.info("Dropping database %s", self._dbname)
             conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             cur.execute(sql.SQL("DROP DATABASE {}").format(sql.Identifier(self._dbname)))
+
+    def drop_tables(self):
+        """drop_tables drops all tables"""
+        with psycopg2.connect(f"{self._dsn} dbname={self._dbname}") as conn, conn.cursor() as cur:
+            logger.info("Dropping tables from %s", self._dbname)
+            cur.execute(queries.DROP_TABLES_SQL)
 
     async def connect(self):
         self._pool = await aiopg.create_pool(f"{self._dsn} dbname={self._dbname}")

@@ -23,16 +23,28 @@ def pg_res_storage(mocker):
     return mocker.patch("walt.main.PostgresResultStorage")
 
 
-def test_setup_database(cfg, pg_res_storage):
-    main.setup_database(cfg)
+def test_create_database(cfg, pg_res_storage):
+    main.create_database(cfg)
     pg_res_storage.assert_called_once_with(so="arg")
-    pg_res_storage.return_value.setup_database.assert_called_once_with()
+    pg_res_storage.return_value.create_database.assert_called_once_with()
 
 
-def test_teardown_database(cfg, pg_res_storage):
-    main.teardown_database(cfg)
+def test_create_tables(cfg, pg_res_storage):
+    main.create_tables(cfg)
     pg_res_storage.assert_called_once_with(so="arg")
-    pg_res_storage.return_value.teardown_database.assert_called_once_with()
+    pg_res_storage.return_value.create_tables.assert_called_once_with()
+
+
+def test_drop_database(cfg, pg_res_storage):
+    main.drop_database(cfg)
+    pg_res_storage.assert_called_once_with(so="arg")
+    pg_res_storage.return_value.drop_database.assert_called_once_with()
+
+
+def test_drop_tables(cfg, pg_res_storage):
+    main.drop_tables(cfg)
+    pg_res_storage.assert_called_once_with(so="arg")
+    pg_res_storage.return_value.drop_tables.assert_called_once_with()
 
 
 def test_produce(cfg, mocker):

@@ -47,66 +47,86 @@ def pg_res_storage(init_args):
     return PostgresResultStorage(*init_args.values())
 
 
-def test_setup_database_calls_connect(pg_res_storage, psycopg2_mock, init_args):
-    dsn_with_dbname = " ".join(f"{k}={v}" for k, v in init_args.items())
-    dsn, _ = dsn_with_dbname.rsplit(maxsplit=1)
-    pg_res_storage.setup_database()
-    assert psycopg2_mock.connect.call_count == 2
+@pytest.fixture
+def dsn_with_dbname(init_args):
+    return " ".join(f"{k}={v}" for k, v in init_args.items())
+
+
+@pytest.fixture
+def dsn(dsn_with_dbname):
+    return dsn_with_dbname.rsplit(maxsplit=1)[0]
+
+
+def test_create_database_calls_connect(pg_res_storage, psycopg2_mock, dsn):
+    pg_res_storage.create_database()
+    assert psycopg2_mock.connect.call_count == 1
     psycopg2_mock.connect.assert_any_call(dsn)
-    psycopg2_mock.connect.assert_any_call(dsn_with_dbname)
 
 
-def test_setup_database_creates_cursor(pg_res_storage, conn_mock):
-    pg_res_storage.setup_database()
-    assert conn_mock.cursor.call_count == 2
-
-
-def test_setup_database_sets_isolation_level(pg_res_storage, conn_mock):
-    pg_res_storage.setup_database()
+def test_create_database_sets_isolation_level(pg_res_storage, conn_mock):
+    pg_res_storage.create_database()
     assert conn_mock.set_isolation_level.call_count == 1
 
 
-def test_setup_database_creates_database(pg_res_storage, init_args, execute_mock, mocker):
+def test_create_database_creates_database(pg_res_storage, init_args, execute_mock, mocker):
     sql_mock = mocker.patch("walt.storages.sql")
     sql_mock.SQL.side_effect = sql_mock.Identifier.side_effect = str
-    pg_res_storage.setup_database()
+    pg_res_storage.create_database()
     execute_mock.assert_any_call(f"CREATE DATABASE {init_args['dbname']}")
 
 
-def test_setup_database_creates_tables(pg_res_storage, execute_mock):
-    pg_res_storage.setup_database()
-    execute_mock.assert_any_call(queries.CREATE_TABLES_SQL)
-
-
-def test_teardown_database_calls_connect(pg_res_storage, psycopg2_mock, init_args):
-    dsn_with_dbname = " ".join(f"{k}={v}" for k, v in init_args.items())
-    dsn, _ = dsn_with_dbname.rsplit(maxsplit=1)
-    pg_res_storage.teardown_database()
-    assert psycopg2_mock.connect.call_count == 2
-    psycopg2_mock.connect.assert_any_call(dsn)
-    psycopg2_mock.connect.assert_any_call(dsn_with_dbname)
-
-
-def test_teardown_database_creates_cursor(pg_res_storage, conn_mock):
-    pg_res_storage.teardown_database()
+def test_create_methods_create_cursor(pg_res_storage, conn_mock):
+    pg_res_storage.create_database()
+    assert conn_mock.cursor.call_count == 1
+    pg_res_storage.create_tables()
     assert conn_mock.cursor.call_count == 2
 
 
-def test_teardown_database_sets_isolation_level(pg_res_storage, conn_mock):
-    pg_res_storage.teardown_database()
+def test_create_tables_creates_tables(pg_res_storage, execute_mock):
+    pg_res_storage.create_tables()
+    execute_mock.assert_any_call(queries.CREATE_TABLES_SQL)
+
+
+def test_create_tables_calls_connect(pg_res_storage, psycopg2_mock, dsn_with_dbname):
+    pg_res_storage.create_tables()
+    assert psycopg2_mock.connect.call_count == 1
+    psycopg2_mock.connect.assert_any_call(dsn_with_dbname)
+
+
+def test_drop_database_calls_connect(pg_res_storage, psycopg2_mock, dsn):
+    pg_res_storage.drop_database()
+    assert psycopg2_mock.connect.call_count == 1
+    psycopg2_mock.connect.assert_any_call(dsn)
+
+
+def test_drop_database_sets_isolation_level(pg_res_storage, conn_mock):
+    pg_res_storage.drop_database()
     assert conn_mock.set_isolation_level.call_count == 1
 
 
-def test_teardown_database_drops_tables(pg_res_storage, execute_mock):
-    pg_res_storage.teardown_database()
+def test_drop_database_drops_database(pg_res_storage, init_args, execute_mock, mocker):
+    sql_mock = mocker.patch("walt.storages.sql")
+    sql_mock.SQL.side_effect = sql_mock.Identifier.side_effect = str
+    pg_res_storage.drop_database()
+    execute_mock.assert_any_call(f"DROP DATABASE {init_args['dbname']}")
+
+
+def test_drop_tables_calls_connect(pg_res_storage, psycopg2_mock, dsn_with_dbname):
+    pg_res_storage.drop_tables()
+    assert psycopg2_mock.connect.call_count == 1
+    psycopg2_mock.connect.assert_any_call(dsn_with_dbname)
+
+
+def test_drop_tables_drops_tables(pg_res_storage, execute_mock):
+    pg_res_storage.drop_tables()
     execute_mock.assert_any_call(queries.DROP_TABLES_SQL)
 
 
-def test_teardown_database_drops_database(pg_res_storage, init_args, execute_mock, mocker):
-    sql_mock = mocker.patch("walt.storages.sql")
-    sql_mock.SQL.side_effect = sql_mock.Identifier.side_effect = str
-    pg_res_storage.teardown_database()
-    execute_mock.assert_any_call(f"DROP DATABASE {init_args['dbname']}")
+def test_drop_methods_creates_cursor(pg_res_storage, conn_mock):
+    pg_res_storage.drop_tables()
+    assert conn_mock.cursor.call_count == 1
+    pg_res_storage.drop_database()
+    assert conn_mock.cursor.call_count == 2
 
 
 @pytest.fixture
