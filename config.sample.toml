@@ -5,10 +5,10 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-log_level = "DEBUG"
-concurrent = 2 # Number of concurrent workers
-interval = 2 # Sleep interval for each worker
-timeout = 30 # Timeout for HTTP connections
+log_level = "INFO" # Logging level
+concurrent = 2 # Number of concurrent workers checking URLs
+interval = 2 # Interval between consecutive checks by the same worker
+timeout = 30 # Timeout for connections
 
 # A map of URLs and their respective regular expressions: URL = regexp pattern
 [url_map]
