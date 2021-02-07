@@ -14,17 +14,8 @@ timeout = 4
 [url_map]
 "https://duckduckgo.com/?q=walt" = "Walt Disney"
 "https://www.google.com/search?q=walt" = "Walt Disney"
-"http://localhost:8080" = ""
-"http://localhost:8080/path_01" = ""
-"http://localhost:8080/path_02" = "\\w{,7}"
-"http://localhost:8080/path_03" = "\\w{2,}"
-"http://localhost:8080/path_04" = "\\w{,2}"
-"http://localhost:8080/path_05" = "\\w{7,}"
-"http://localhost:8080/path_06" = "\\w{,7}"
-"http://localhost:8080/path_07" = "\\w{9,}"
-"http://localhost:8080/path_08" = "\\w{,5}"
-"http://localhost:8989" = "" # unavailable
-invalid = ""
+"https://duckduckgo.com/?q=doge+meme" = "Kabosu"
+"https://www.google.com/search?q=doge+meme" = "Kabosu"
 
 [kafka]
 uri = "localhost:9092"

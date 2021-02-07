@@ -33,12 +33,10 @@ CONFIG = {
     "user_agent": USER_AGENT,
     "headers": HEADERS,
     "url_map": {  # A dictionary of URL => regexp pattern
-        "http://localhost:8080/path_1": r"\w{,5}",
-        "http://localhost:8080/path_2": r"\w{6,}",
-        "http://localhost:8080/path_3": "",
-        "http://localhost:8080": "",
-        "http://localhost:8989": "",
-        "invalid": "",
+        "https://duckduckgo.com/?q=walt": "Walt Disney",
+        "https://www.google.com/search?q=walt": "Walt Disney",
+        "https://duckduckgo.com/?q=doge+meme": "Kabosu",
+        "https://www.google.com/search?q=doge+meme": "Kabosu",
     },
     "kafka": {
         "uri": "localhost:9092",  # Kafka server URI
