@@ -32,7 +32,8 @@ def test_consumer_inits_with_a_cfg_and_storage_args():
 
 
 @pytest.fixture
-def consumer():
+def consumer(mocker):
+    mocker.patch.object(Consumer, "_ssl_arguments", new_callable=lambda: {})
     consumer = Consumer(MagicMock(), AsyncMock(), result.ResultSerde)
     consumer._interval = 1
     consumer._timeout = 1
@@ -88,7 +89,7 @@ class ConsumerTester(ActionRunnerBaseTester, Consumer):
 
 
 @pytest.fixture
-def consumer_auto_cancel():
+def consumer_auto_cancel(mocker):
     async def side_effect(consumer):
         attempts = 0
         while True:
@@ -99,6 +100,7 @@ def consumer_auto_cancel():
         for task in asyncio.all_tasks():
             task.cancel()
 
+    mocker.patch.object(Consumer, "_ssl_arguments", new_callable=lambda: {})
     consumer = ConsumerTester(MagicMock(), AsyncMock(), result.ResultSerde)
     consumer.register_tasks([(AsyncMock(side_effect=side_effect), (consumer,))])
     consumer._interval = 1

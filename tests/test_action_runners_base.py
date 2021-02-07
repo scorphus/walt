@@ -10,6 +10,8 @@
 
 from tests.base import ActionRunnerBaseTester
 from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from walt.action_runners import KafkaSSLConnector
 
 import asyncio
 import os
@@ -111,3 +113,26 @@ def test_action_runner_finishes_on_tasks_cancellation(action_runner, logger_mock
     action_runner.register_tasks([task])
     action_runner.run()
     logger_mock.info.assert_called_once()
+
+
+@pytest.fixture
+def aiokafka_helpers_mock(mocker):
+    return mocker.patch("walt.action_runners.aiokafka.helpers")
+
+
+def test_kafka_ssl_context_connector_returns_dict_with_protocol_and_context(aiokafka_helpers_mock):
+    cfg_mock = MagicMock()
+    arguments = KafkaSSLConnector(cfg_mock)._ssl_arguments
+    assert arguments["security_protocol"] == "SSL"
+    assert arguments["ssl_context"] == aiokafka_helpers_mock.create_ssl_context.return_value
+    aiokafka_helpers_mock.create_ssl_context.assert_called_once_with(
+        cafile=cfg_mock["kafka"]["cafile"],
+        certfile=cfg_mock["kafka"]["certfile"],
+        keyfile=cfg_mock["kafka"]["keyfile"],
+    )
+
+
+def test_kafka_ssl_context_connector_returns_empty_dict(aiokafka_helpers_mock):
+    cfg_kafka = {"cafile": "", "certfile": "", "keyfile": ""}
+    assert KafkaSSLConnector({"kafka": cfg_kafka})._ssl_arguments == {}
+    aiokafka_helpers_mock.create_ssl_context.assert_not_called()

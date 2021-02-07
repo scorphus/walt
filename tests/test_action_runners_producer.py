@@ -39,7 +39,8 @@ def test_producer_inits_with_a_cfg_arg():
 
 
 @pytest.fixture
-def producer():
+def producer(mocker):
+    mocker.patch.object(Producer, "_ssl_arguments", new_callable=lambda: {})
     producer = Producer(MagicMock())
     producer._interval = 1
     producer._timeout = 1
@@ -157,7 +158,7 @@ class ProducerTester(ActionRunnerBaseTester, Producer):
 
 
 @pytest.fixture
-def producer_auto_cancel():
+def producer_auto_cancel(mocker):
     async def side_effect(producer):
         attempts = 0
         while True:
@@ -168,6 +169,7 @@ def producer_auto_cancel():
         for task in asyncio.all_tasks():
             task.cancel()
 
+    mocker.patch.object(ProducerTester, "_ssl_arguments", new_callable=lambda: {})
     producer = ProducerTester(MagicMock())
     producer.register_tasks([(AsyncMock(side_effect=side_effect), (producer,))])
     producer._interval = 1

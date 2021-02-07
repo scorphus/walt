@@ -14,6 +14,7 @@ from walt import result
 
 import aiohttp
 import aiokafka
+import aiokafka.helpers
 import asyncio
 import re
 import signal
@@ -66,11 +67,34 @@ class ActionRunnerBase:
             self._counter += 1
 
 
-class Producer(ActionRunnerBase):
+class KafkaSSLConnector:
+    """KafkaSSLConnector is a base class for any producer or consumer that
+    connects to a broker using SSL"""
+
+    def __init__(self, cfg):
+        self._kafka_cafile = cfg["kafka"]["cafile"]
+        self._kafka_certfile = cfg["kafka"]["certfile"]
+        self._kafka_keyfile = cfg["kafka"]["keyfile"]
+
+    @property
+    def _ssl_arguments(self):
+        """_ssl_arguments returns a dictionary of appropriate SSL arguments"""
+        if self._kafka_cafile:
+            context = aiokafka.helpers.create_ssl_context(
+                cafile=self._kafka_cafile,
+                certfile=self._kafka_certfile,
+                keyfile=self._kafka_keyfile,
+            )
+            return dict(security_protocol="SSL", ssl_context=context)
+        return {}
+
+
+class Producer(ActionRunnerBase, KafkaSSLConnector):
     """Producer produces website verification result into a Kafka topic"""
 
     def __init__(self, cfg):
-        super().__init__()
+        ActionRunnerBase.__init__(self)
+        KafkaSSLConnector.__init__(self, cfg)
         self._headers = {"User-Agent": cfg["user_agent"], **cfg["headers"]}
         self._url_map = self._compile_url_patterns(cfg["url_map"])
         self._interval = cfg["interval"]
@@ -119,6 +143,7 @@ class Producer(ActionRunnerBase):
             bootstrap_servers=self._kafka_uri,
             request_timeout_ms=self._timeout * 1000,
             retry_backoff_ms=self._interval * 1000,
+            **self._ssl_arguments,
         )
         await self._kafka_producer.start()
 
@@ -203,12 +228,13 @@ class Producer(ActionRunnerBase):
             logger.exception("Failed to send {msg} to {self._kafka_topic}!")
 
 
-class Consumer(ActionRunnerBase):
+class Consumer(ActionRunnerBase, KafkaSSLConnector):
     """Consumer consumes data from a Kafka topic, runs it through a deserializer
     and delivers it to a data storage"""
 
     def __init__(self, cfg, storage, serde):
-        super().__init__()
+        ActionRunnerBase.__init__(self)
+        KafkaSSLConnector.__init__(self, cfg)
         self._interval = cfg["interval"]
         self._timeout = cfg["timeout"]
         self._kafka_uri = cfg["kafka"]["uri"]
@@ -243,6 +269,7 @@ class Consumer(ActionRunnerBase):
             bootstrap_servers=self._kafka_uri,
             request_timeout_ms=self._timeout * 1000,
             retry_backoff_ms=self._interval * 1000,
+            **self._ssl_arguments,
         )
         await self._kafka_consumer.start()
 
