@@ -6,9 +6,9 @@
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
 log_level = "DEBUG"
-concurrent = 2
-interval = 1
-timeout = 4
+concurrent = 2 # Number of concurrent workers
+interval = 2 # Sleep interval for each worker
+timeout = 30 # Timeout for HTTP connections
 
 # A map of URLs and their respective regular expressions: URL = regexp pattern
 [url_map]
@@ -18,15 +18,15 @@ timeout = 4
 "https://www.google.com/search?q=doge+meme" = "Kabosu"
 
 [kafka]
-uri = "localhost:9092"
-topic = "walt"
-cafile = ""
-certfile = ""
-keyfile = ""
+uri = "localhost:9092" # Kafka server URI
+cafile = "" # Certificate Authority file path
+certfile = "" # Client Certificate file path
+keyfile = "" # Client Private Key file path
+topic = "walt" # Default topic
 
 [postgres]
-host = "localhost"
-port = 5432
-user = "postgres"
-password = "mysecretpassword"
-dbname = "walt"
+host = "localhost" # Database host address
+port = 5432 # Connection port number
+user = "postgres" # User name used to authenticate
+password = "mysecretpassword" # Password used to authenticate
+dbname = "walt" # Database name
