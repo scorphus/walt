@@ -55,6 +55,8 @@ walt=> SELECT * FROM error LIMIT 10;
 
 - Python >= 3.8
 
+### Install with pip
+
 Clone the repo and install with `pip`:
 
     $ git clone git@github.com:scorphus/walt.git
@@ -67,7 +69,7 @@ Verify the installation:
 
 ## Usage
 
-After installation, a script is installed in your local Python `bin` path. Check
+After installation, a script is created in your local Python `bin` path. Check
 how to use it with:
 
     $ walt --help
@@ -79,7 +81,7 @@ walt is configured with a [TOML] file. Either base off of
 
     $ walt generate_config_sample > config.toml
 
-Then change the configuration accordingly. These are default values:
+Then change the configuration accordingly. These are the default values:
 
 ```toml
 log_level = "INFO" # Logging level
@@ -139,7 +141,7 @@ can start by creating the database and/or tables:
 
 Check [walt.tf] if you plan to use walt with [Aiven] database services.
 
-### Consuming
+### Consuming/Producing
 
 Start the consumer with the following:
 
@@ -203,7 +205,7 @@ See [LICENSE] for details.
 
 [build-badge]: https://github.com/scorphus/walt/workflows/Python/badge.svg
 [action-link]: https://github.com/scorphus/walt/actions?query=workflow%3APython
-[codecov-badge]: https://codecov.io/gh/scorphus/walt/branch/main/graph/badge.svg?token=AefYHaJ5VS
+[codecov-badge]: https://codecov.io/gh/scorphus/walt/branch/main/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/scorphus/walt
 [toml]: https://gist.github.com/njsmith/78f68204c5d969f8c8bc645ef77d4a8f#summary
 [config.sample.toml]: config.sample.toml
