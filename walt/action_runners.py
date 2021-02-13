@@ -8,17 +8,18 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-from walt import async_backoff
-from walt import logger
-from walt import result
-
-import aiohttp
-import aiokafka
-import aiokafka.helpers
 import asyncio
 import re
 import signal
 import time
+
+import aiohttp
+import aiokafka
+import aiokafka.helpers
+
+from walt import async_backoff
+from walt import logger
+from walt import result
 
 
 class ActionRunnerBase:

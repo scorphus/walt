@@ -8,17 +8,18 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-from tests.base import ActionRunnerBaseTester
-from unittest.mock import AsyncMock
-from unittest.mock import call
-from unittest.mock import MagicMock
-from walt import result
-from walt.action_runners import Consumer
-
-import aiokafka
 import asyncio
 import contextlib
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import call
+
+import aiokafka
 import pytest
+
+from tests.base import ActionRunnerBaseTester
+from walt import result
+from walt.action_runners import Consumer
 
 
 def test_consumer_inits_with_a_cfg_and_storage_args():

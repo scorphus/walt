@@ -8,21 +8,22 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-from aiohttp.client_exceptions import ClientOSError
-from tests.base import ActionRunnerBaseTester
+import asyncio
+import contextlib
+import re
 from unittest.mock import ANY
 from unittest.mock import AsyncMock
-from unittest.mock import call
 from unittest.mock import MagicMock
-from walt import result
-from walt.action_runners import Producer
+from unittest.mock import call
 
 import aiohttp
 import aiokafka
-import asyncio
-import contextlib
 import pytest
-import re
+from aiohttp.client_exceptions import ClientOSError
+
+from tests.base import ActionRunnerBaseTester
+from walt import result
+from walt.action_runners import Producer
 
 
 def test_producer_inits_with_a_cfg_arg():

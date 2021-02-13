@@ -11,8 +11,8 @@
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
-from enum import auto
 from enum import Enum
+from enum import auto
 
 
 EPOCH = datetime(1970, 1, 1)  # timezone-naïve epoch time

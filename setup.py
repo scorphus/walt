@@ -8,11 +8,12 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+import os
+
 from setuptools import find_packages
 from setuptools import setup
-from walt import __version__
 
-import os
+from walt import __version__
 
 
 def read(*rnames):

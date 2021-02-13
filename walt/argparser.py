@@ -8,12 +8,12 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-from argparse import ArgumentParser
-from argparse import FileType
-from walt import __version__
-
 import inspect
 import sys
+from argparse import ArgumentParser
+from argparse import FileType
+
+from walt import __version__
 
 
 class PropertyMetaClass(type):

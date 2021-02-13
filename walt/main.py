@@ -9,17 +9,17 @@
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
 
+import logging
+import os
+
 from walt import config
 from walt import logger
 from walt.action_runners import Consumer
 from walt.action_runners import Producer
-from walt.argparser import action
 from walt.argparser import ActionArgParser
+from walt.argparser import action
 from walt.result import ResultSerde
 from walt.storages import PostgresResultStorage
-
-import logging
-import os
 
 
 def walt():  # pragma: no cover

@@ -8,10 +8,10 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+import os
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
-import os
 import pytest
 
 

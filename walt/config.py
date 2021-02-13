@@ -8,12 +8,13 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+import os
 from copy import deepcopy
+
+import toml
+
 from walt import logger
 from walt.argparser import action
-
-import os
-import toml
 
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

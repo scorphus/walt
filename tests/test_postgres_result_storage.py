@@ -9,11 +9,12 @@
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
 from unittest.mock import AsyncMock
+
+import pytest
+
 from walt import queries
 from walt import result
 from walt.storages import PostgresResultStorage
-
-import pytest
 
 
 @pytest.fixture

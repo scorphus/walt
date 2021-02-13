@@ -8,15 +8,16 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-from tests.base import ActionRunnerBaseTester
-from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
-from walt.action_runners import KafkaSSLConnector
-
 import asyncio
 import os
-import pytest
 import signal
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+
+import pytest
+
+from tests.base import ActionRunnerBaseTester
+from walt.action_runners import KafkaSSLConnector
 
 
 @pytest.fixture

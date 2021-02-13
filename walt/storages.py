@@ -8,13 +8,13 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+import aiopg
+import psycopg2
 from psycopg2 import sql
+
 from walt import logger
 from walt import queries
 from walt.result import ResultType
-
-import aiopg
-import psycopg2
 
 
 class PostgresResultStorage:
