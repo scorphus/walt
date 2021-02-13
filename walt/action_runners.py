@@ -40,12 +40,12 @@ class ActionRunnerBase:
 
     def _shutdown(self):
         logger.debug("Stopping %s tasks", len(self._tasks))
-        for t in self._tasks:
-            t.cancel()
+        for task in self._tasks:
+            task.cancel()
         if not self._tasks:
             logger.debug("Stopping remaining tasks")
-            for t in asyncio.all_tasks():
-                t.cancel()
+            for task in asyncio.all_tasks():
+                task.cancel()
 
     def run(self):
         """run runs the action until completion"""

@@ -68,8 +68,8 @@ def load(config_toml):
     try:
         logger.info("[config] loading from %s", file_name)
         deep_update(cfg, toml.load(config_toml))
-    except Exception as e:
-        logger.error("[config] could not load from %s: %s", file_name, e)
+    except Exception as err:
+        logger.error("[config] could not load from %s: %s", file_name, err)
     return cfg
 
 
