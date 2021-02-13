@@ -12,6 +12,7 @@
 
 import logging
 import os
+import sys
 
 from walt import config
 from walt import logger
@@ -44,7 +45,7 @@ def walt():  # pragma: no cover
             return ActionArgParser.run_action()
         if not ActionArgParser.args.config:
             logger.fatal("Cannot proceed with no config file")
-            exit(1)
+            sys.exit(1)
         cfg = config.load(ActionArgParser.args.config)
         config.override_from(cfg, os.environ)
         set_verbosity(level_name=cfg.get("log_level"))
