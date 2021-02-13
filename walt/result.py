@@ -80,7 +80,9 @@ class Result:
                 int(utc_timestamp_ms),
             )
         except ValueError as err:
-            raise ValueError(f"{repr(result_str)} is not a valid Result representation: {err}")
+            raise ValueError(
+                f"{repr(result_str)} is not a valid Result representation: {err}"
+            ) from err
 
     def as_dict(self):
         result = vars(self).copy()
