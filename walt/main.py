@@ -42,14 +42,15 @@ def walt():  # pragma: no cover
         ActionArgParser.print_version()
     elif ActionArgParser.args.action:
         if not ActionArgParser.requires_config:
-            return ActionArgParser.run_action()
-        if not ActionArgParser.args.config:
+            ActionArgParser.run_action()
+        elif not ActionArgParser.args.config:
             logger.fatal("Cannot proceed with no config file")
             sys.exit(1)
-        cfg = config.load(ActionArgParser.args.config)
-        config.override_from(cfg, os.environ)
-        set_verbosity(level_name=cfg.get("log_level"))
-        return ActionArgParser.run_action(cfg)
+        else:
+            cfg = config.load(ActionArgParser.args.config)
+            config.override_from(cfg, os.environ)
+            set_verbosity(level_name=cfg.get("log_level"))
+            ActionArgParser.run_action(cfg)
     else:
         ActionArgParser.print_usage()
 
