@@ -116,7 +116,7 @@ async def test_start_kafka_producer_retries_with_backoff(producer, kafka_produce
     side_effect = [aiokafka.errors.KafkaConnectionError] * failures + [AsyncMock()]
     kafka_producer_mock.return_value.start.side_effect = side_effect
     await producer._start_kafka_producer()
-    kafka_producer_mock.return_value.start.call_count == failures
+    assert kafka_producer_mock.return_value.start.call_count == failures + 1
     sleep_mocker.assert_has_calls([call(1), call(2), call(4)])
 
 

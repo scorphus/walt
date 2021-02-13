@@ -48,7 +48,7 @@ async def test_start_kafka_consumer_retries_with_backoff(consumer, kafka_consume
     side_effect = [aiokafka.errors.KafkaConnectionError] * failures + [AsyncMock()]
     kafka_consumer_mock.return_value.start.side_effect = side_effect
     await consumer._start_kafka_consumer()
-    kafka_consumer_mock.return_value.start.call_count == failures
+    assert kafka_consumer_mock.return_value.start.call_count == failures + 1
     sleep_mocker.assert_has_calls([call(1), call(2), call(4)])
 
 
