@@ -1,4 +1,4 @@
-# walt [![Build Status][build-badge]][action-link] [![Coverage Status][codecov-badge]][codecov-link]
+# walt [![Build Status][build-badge]][action-link] [![Coverage Status][codecov-badge]][codecov-link] [![Maintainability][codeclimate-badge]][codeclimate-link]
 
 walt — Website Availability Monitor
 
@@ -206,6 +206,8 @@ See [LICENSE][] for details.
 [action-link]: https://github.com/scorphus/walt/actions?query=workflow%3APython
 [codecov-badge]: https://codecov.io/gh/scorphus/walt/branch/main/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/scorphus/walt
+[codeclimate-badge]: https://api.codeclimate.com/v1/badges/1a6687203d55505d015d/maintainability
+[codeclimate-link]: https://codeclimate.com/github/scorphus/walt/maintainability
 [toml]: https://gist.github.com/njsmith/78f68204c5d969f8c8bc645ef77d4a8f#summary
 [config.sample.toml]: config.sample.toml
 [walt.tf]: https://github.com/scorphus/walt.tf
