@@ -1,4 +1,4 @@
-# walt [![Build Status][build-badge]][action-link] [![Coverage Status][codecov-badge]][codecov-link] [![Maintainability][codeclimate-badge]][codeclimate-link]
+# walt [![Build Status][build-badge]][action-link] [![Coverage Status][codecov-badge]][codecov-link] [![Maintainability][codeclimate-badge]][codeclimate-link] [![Code Quality][codacy-badge]][codacy-link]
 
 walt — Website Availability Monitor
 
@@ -208,6 +208,8 @@ See [LICENSE][] for details.
 [codecov-link]: https://codecov.io/gh/scorphus/walt
 [codeclimate-badge]: https://api.codeclimate.com/v1/badges/1a6687203d55505d015d/maintainability
 [codeclimate-link]: https://codeclimate.com/github/scorphus/walt/maintainability
+[codacy-badge]: https://app.codacy.com/project/badge/Grade/06b3ee97b12b45abbe47bf92169b65be
+[codacy-link]: https://www.codacy.com/gh/scorphus/walt/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=scorphus/walt&amp;utm_campaign=Badge_Grade
 [toml]: https://gist.github.com/njsmith/78f68204c5d969f8c8bc645ef77d4a8f#summary
 [config.sample.toml]: config.sample.toml
 [walt.tf]: https://github.com/scorphus/walt.tf
