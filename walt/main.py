@@ -8,6 +8,7 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+"""main contains the `walt` entry point along with main actions"""
 
 import logging
 import os

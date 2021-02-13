@@ -8,6 +8,8 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+"""result defines Result, its attributes types and a de/serializer"""
+
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
@@ -37,7 +39,7 @@ class Pattern(Enum):
 
 
 def utc_now_ms():
-    "utc_now_ms returns the current UTC timestamp in milliseconds"
+    """utc_now_ms returns the current UTC timestamp in milliseconds"""
     return round((datetime.utcnow() - EPOCH).total_seconds() * 1e3)
 
 

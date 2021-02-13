@@ -8,6 +8,8 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+"""storages provides entities responsible for writing a Result to external resources"""
+
 import aiopg
 import psycopg2
 from psycopg2 import sql

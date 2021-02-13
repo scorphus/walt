@@ -8,6 +8,9 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+"""argparser provides an argument parser that expects an action to run and an
+optional configuration file"""
+
 import inspect
 import sys
 from argparse import ArgumentParser

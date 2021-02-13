@@ -8,8 +8,7 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
-# from walt import logger
-
+"""queries collects all queries used by walt"""
 
 DROP_TABLES_SQL = """
 DROP TABLE IF EXISTS result;

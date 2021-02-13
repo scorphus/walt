@@ -28,6 +28,9 @@ logger.addHandler(handler)
 
 
 def async_backoff(backoff=1, msg=None):
+    """async_backoff decorates function that can potentially fail and retries it
+    in an exponential-ish backoff fashion"""
+
     if not isinstance(backoff, int) or isinstance(backoff, float):
         raise ValueError("backoff is expected to be numeric")
 

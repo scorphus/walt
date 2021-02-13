@@ -8,6 +8,8 @@
 # https://opensource.org/licenses/BSD-3-Clause
 # Copyright (c) 2021, Pablo S. Blum de Aguiar <scorphus@gmail.com>
 
+"""action_runners declares action runners used in walt, mostly a Producer and a Consumer"""
+
 import asyncio
 import re
 import signal
