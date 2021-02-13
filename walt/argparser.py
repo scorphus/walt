@@ -26,16 +26,16 @@ class PropertyMetaClass(type):
     bug description for more: https://bugs.python.org/issue19072"""
 
     @property
-    def args(self):
-        return self._args_property()
+    def args(cls):
+        return cls._args_property()
 
     @property
-    def parser(self):
-        return self._parser_property()
+    def parser(cls):
+        return cls._parser_property()
 
     @property
-    def requires_config(self):
-        return self._requires_config_property()
+    def requires_config(cls):
+        return cls._requires_config_property()
 
 
 class ActionArgParser(metaclass=PropertyMetaClass):
