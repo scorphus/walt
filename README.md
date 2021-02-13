@@ -8,52 +8,49 @@ coordinates data flow with Kafka and stores results on Postgres.
 walt takes a collection of URLs and their optional regular expression patterns
 and checks for:
 
-- HTTP response time
-- HTTP status code
-- Occurrence of regexp pattern in the page
+-   HTTP response time
+-   HTTP status code
+-   Occurrence of regexp pattern in the page
 
 Verification results are either a `result`:
 
-```
-walt=> SELECT * FROM result LIMIT 10;
- result_id |                    url                    |    response_time    | status_code |  pattern  |         timestamp          
------------+-------------------------------------------+---------------------+-------------+-----------+----------------------------
-         1 | https://duckduckgo.com/?q=walt            | 0.08444564199999993 |         200 | FOUND     | 2021-02-07 21:24:24.583+00
-         2 | https://www.google.com/search?q=walt      |  1.8681911579999997 |         200 | FOUND     | 2021-02-07 21:24:26.378+00
-         3 | https://duckduckgo.com/?q=doge+meme       | 0.01953169999999993 |         200 | NOT_FOUND | 2021-02-07 21:24:26.606+00
-         4 | https://duckduckgo.com/?q=walt            | 0.03456038500000069 |         200 | FOUND     | 2021-02-07 21:24:28.641+00
-         5 | https://www.google.com/search?q=doge+meme |  0.6267991500000001 |         200 | FOUND     | 2021-02-07 21:24:29.01+00
-         6 | https://duckduckgo.com/?q=doge+meme       | 0.02907168100000046 |         200 | NOT_FOUND | 2021-02-07 21:24:31.042+00
-         7 | https://www.google.com/search?q=walt      |  1.1037337520000001 |         200 | FOUND     | 2021-02-07 21:24:31.749+00
-         8 | https://duckduckgo.com/?q=walt            |          0.03649068 |         200 | FOUND     | 2021-02-07 21:24:33.083+00
-         9 | https://www.google.com/search?q=doge+meme |  0.0821932520000015 |         200 | FOUND     | 2021-02-07 21:24:33.832+00
-        10 | https://duckduckgo.com/?q=doge+meme       | 0.01893998200000091 |         200 | NOT_FOUND | 2021-02-07 21:24:35.107+00
-(10 rows)
-```
+    walt=> SELECT * FROM result LIMIT 10;
+     result_id |                    url                    |    response_time    | status_code |  pattern  |         timestamp          
+    -----------+-------------------------------------------+---------------------+-------------+-----------+----------------------------
+             1 | https://duckduckgo.com/?q=walt            | 0.08444564199999993 |         200 | FOUND     | 2021-02-07 21:24:24.583+00
+             2 | https://www.google.com/search?q=walt      |  1.8681911579999997 |         200 | FOUND     | 2021-02-07 21:24:26.378+00
+             3 | https://duckduckgo.com/?q=doge+meme       | 0.01953169999999993 |         200 | NOT_FOUND | 2021-02-07 21:24:26.606+00
+             4 | https://duckduckgo.com/?q=walt            | 0.03456038500000069 |         200 | FOUND     | 2021-02-07 21:24:28.641+00
+             5 | https://www.google.com/search?q=doge+meme |  0.6267991500000001 |         200 | FOUND     | 2021-02-07 21:24:29.01+00
+             6 | https://duckduckgo.com/?q=doge+meme       | 0.02907168100000046 |         200 | NOT_FOUND | 2021-02-07 21:24:31.042+00
+             7 | https://www.google.com/search?q=walt      |  1.1037337520000001 |         200 | FOUND     | 2021-02-07 21:24:31.749+00
+             8 | https://duckduckgo.com/?q=walt            |          0.03649068 |         200 | FOUND     | 2021-02-07 21:24:33.083+00
+             9 | https://www.google.com/search?q=doge+meme |  0.0821932520000015 |         200 | FOUND     | 2021-02-07 21:24:33.832+00
+            10 | https://duckduckgo.com/?q=doge+meme       | 0.01893998200000091 |         200 | NOT_FOUND | 2021-02-07 21:24:35.107+00
+    (10 rows)
+
 Or an `error`, for cases where there was no response:
 
-```
-walt=> SELECT * FROM error LIMIT 10;
- error_id |                      url                      |     error     |         timestamp          
-----------+-----------------------------------------------+---------------+----------------------------
-        1 | https://www.google.com/search?q=walt          | TIMEOUT_ERROR | 2021-02-07 21:38:50.293+00
-        2 | https://foobarbazquxxyz.m.pipedream.net/p/179 | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
-        3 | https://foobarbazquxxyz.m.pipedream.net/p/04  | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
-        4 | https://foobarbazquxxyz.m.pipedream.net/p/01  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
-        5 | https://foobarbazquxxyz.m.pipedream.net/p/359 | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
-        6 | https://foobarbazquxxyz.m.pipedream.net/p/13  | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
-        7 | https://foobarbazquxxyz.m.pipedream.net/p/02  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
-        8 | https://foobarbazquxxyz.m.pipedream.net/p/11  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
-        9 | https://foobarbazquxxyz.m.pipedream.net/p/10  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
-       10 | https://foobarbazquxxyz.m.pipedream.net/p/05  | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
-(10 rows)
-```
+    walt=> SELECT * FROM error LIMIT 10;
+     error_id |                      url             |     error     |         timestamp          
+    ----------+--------------------------------------+---------------+----------------------------
+            1 | https://www.google.com/search?q=walt | TIMEOUT_ERROR | 2021-02-07 21:38:50.293+00
+            2 | https://foobar.m.pipedream.net/p/179 | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
+            3 | https://foobar.m.pipedream.net/p/04  | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
+            4 | https://foobar.m.pipedream.net/p/01  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
+            5 | https://foobar.m.pipedream.net/p/359 | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
+            6 | https://foobar.m.pipedream.net/p/13  | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
+            7 | https://foobar.m.pipedream.net/p/02  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
+            8 | https://foobar.m.pipedream.net/p/11  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
+            9 | https://foobar.m.pipedream.net/p/10  | TIMEOUT_ERROR | 2021-02-07 21:42:59.344+00
+           10 | https://foobar.m.pipedream.net/p/05  | TIMEOUT_ERROR | 2021-02-07 21:42:59.343+00
+    (10 rows)
 
 ## Installation
 
 ### System requirement
 
-- Python >= 3.8
+-   Python >= 3.8
 
 ### Install with pip
 
@@ -76,7 +73,7 @@ how to use it with:
 
 ## Configuration
 
-walt is configured with a [TOML] file. Either base off of
+walt is configured with a [TOML][] file. Either base off of
 [`config.sample.toml`][config.sample.toml] or generate a new sample:
 
     $ walt generate_config_sample > config.toml
@@ -139,7 +136,7 @@ can start by creating the database and/or tables:
     $ walt -c config.toml create_database  # skip if the database already exists
     $ walt -c config.toml create_tables
 
-Check [walt.tf] if you plan to use walt with [Aiven] database services.
+Check [walt.tf][] if you plan to use walt with [Aiven][] database services.
 
 ### Consuming/Producing
 
@@ -155,36 +152,38 @@ Start the producer with the following:
 
 ### Requirements
 
-- Python >= 3.8
-- An activated virtual environment
-- [pre-commit]
+-   Python >= 3.8
+-   An activated virtual environment
+-   [pre-commit][]
 
 ### Create a development environment
 
-1. Start by creating a new Python virtual environment with the tool of your
-   choice (we recommend [pyenv])
-2. Install pre-commit (we recommend [installing][pre-commit-install] it not as
-   part of the virtual environment — use your system's package manager)
-3. Install walt in editable mode with all required dependencies:
+1.  Start by creating a new Python virtual environment with the tool of your
+    choice (we recommend [pyenv][])
 
-       $ make setup
+2.  Install pre-commit (we recommend [installing][pre-commit-install] it not as
+    part of the virtual environment — use your system's package manager)
+
+3.  Install walt in editable mode with all required dependencies:
+
+        $ make setup
 
 ### Run tests
 
 Once you have a working development environment:
 
-1. Run tests
+1.  Run tests
 
-       $ make tests
+        $ make tests
 
-2. Check code coverage
+2.  Check code coverage
 
-       $ make coverage
-       $ open htmlcov/index.html
+        $ make coverage
+        $ open htmlcov/index.html
 
-3. Lint the code:
+3.  Lint the code:
 
-       $ make lint
+        $ make lint
 
 ### Run locally
 
@@ -201,7 +200,7 @@ Have fun!
 Code in this repository is distributed under the terms of the BSD 3-Clause
 License (BSD-3-Clause).
 
-See [LICENSE] for details.
+See [LICENSE][] for details.
 
 [build-badge]: https://github.com/scorphus/walt/workflows/Python/badge.svg
 [action-link]: https://github.com/scorphus/walt/actions?query=workflow%3APython
@@ -210,7 +209,7 @@ See [LICENSE] for details.
 [toml]: https://gist.github.com/njsmith/78f68204c5d969f8c8bc645ef77d4a8f#summary
 [config.sample.toml]: config.sample.toml
 [walt.tf]: https://github.com/scorphus/walt.tf
-[Aiven]: https://aiven.io/
+[aiven]: https://aiven.io/
 [pre-commit]: https://pre-commit.com
 [pre-commit-install]: https://pre-commit.com/#install
 [pyenv]: https://github.com/pyenv/pyenv
